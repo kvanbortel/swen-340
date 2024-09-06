@@ -9,5 +9,6 @@
 # Compiled binary files
 *.o
 
+bin/
 test
 

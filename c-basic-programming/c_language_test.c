@@ -12,8 +12,13 @@
 // return a null if the requested position is past the end of the string.
 char *get_pointer_at_position( char *pstring, int position )
 {
-	// Your code here
-	return pstring ;	// Fix this -- it is incorrect but allows the program to compile and run.
+	char *w_pstring = pstring;
+	int i = 0;
+	for ( ; *w_pstring != '\0'; w_pstring++, i++) {
+		if (i == position)
+			return w_pstring;
+	}
+		return NULL;
 }
 
 // Convert array of integer x values into an array of y values using y = mx + b where m and b are constants
@@ -23,8 +28,14 @@ char *get_pointer_at_position( char *pstring, int position )
 // Return 0 if the passed in px pointer is NULL.
 int convert_and_sum( int *px, int m, int b, int number_of_x_values )
 {
-	// your code here
-	return 0 ;		// Fix this -- it is incorrect but allows the program to compile and run.
+	if (!px)
+		return 0;
+	int sum = 0;
+	for ( ; number_of_x_values > 0; number_of_x_values--, px++) {
+		*px = *px * m + b;
+		sum += *px;
+	}
+	return sum;
 }
 
 // Determine if two pointers point to the same array of numbers
@@ -32,8 +43,13 @@ int convert_and_sum( int *px, int m, int b, int number_of_x_values )
 // return 0 if either pointer is NULL.
 int same_array( int *pfirst, int *psecond )
 {
-	// your code here
-	return 0 ;	// Fix this -- it is incorrect but allows the program to compile and run.
+	if (!pfirst || !psecond)
+		return 0;
+	for (; *pfirst == *psecond; pfirst++, psecond++) {
+		if (*pfirst == '\0' && *psecond == '\0')
+			return 1;
+	}
+		return 0;
 }
 
 // The first time this is called return 1.
@@ -41,8 +57,9 @@ int same_array( int *pfirst, int *psecond )
 // Continue this pattern returning 1, then 0, then 1 and so on.
 int bool_flip_flop()
 {
-	// your code here
-	return 0 ;	// Fix this -- it is incorrect but allows the program to compile and run.
+	static int state = 0;
+	state = !state;
+	return state;
 }
 
 // This function is implemented incorrectly. You need to correct it.
@@ -51,11 +68,12 @@ int bool_flip_flop()
 // It returns 0 on if the passed string is NULL or an empty string.
 int fix_bad_code( char *pstring )
 {
-	if ( *pstring || ! pstring )
-		return 0 ; 
-	while ( *pstring = '\0' )
+	if ( *pstring == '\0' || !pstring )
+		return 0 ;
+	while ( *++pstring != '\0' )
 		;
-	pstring = 'Z' ;
+	pstring--;
+	*pstring = 'Z' ;
 	return 1 ;
 }
 
@@ -68,5 +86,7 @@ int fix_bad_code( char *pstring )
 // It returns 1 if the selected bit is a 1
 int get_bit_value( int value, int bit_position )
 {
-	return 0 ;
+	int mask = 1 << bit_position; // mask has 1 in that position
+    int masked_value = value & mask; // only the value in that pos. is retained as either 1 or 0
+    return masked_value >> bit_position; // bit is shifted back to first position
 }

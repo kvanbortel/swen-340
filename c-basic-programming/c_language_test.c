@@ -87,6 +87,6 @@ int fix_bad_code( char *pstring )
 int get_bit_value( int value, int bit_position )
 {
 	int mask = 1 << bit_position; // mask has 1 in that position
-    int masked_value = value & mask; // only the value in that pos. is retained as either 1 or 0
-    return masked_value >> bit_position; // bit is shifted back to first position
+	int masked_value = value & mask; // only the value in that pos. is retained as either 1 or 0
+	return masked_value >> bit_position; // bit is shifted back to first position
 }

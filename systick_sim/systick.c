@@ -12,10 +12,14 @@ int clock_enable_test( void )
 
 	// STUDENT: first get the pointer to the systick registers using the get systick registers function.
 	// 			next set the clock source to the processor clock
-
+	systick_registers_t *p_registers = get_systick_registers();
+	p_registers->CSR |= 1 << 2; // according to manual, bit 2 (from 0) is CLKSOURCE,
+								// 0 = external clock; 1 = processor clock
+								// so shift a 1 two places and | it
 	
 	// STUDENT now confirm that it is set to processor clock by using the is_processor_clock_set function
 	//         if we do get that is set correctly return 1 from this function
+	result = is_processor_clock_set();
 
 	return result ;
 }

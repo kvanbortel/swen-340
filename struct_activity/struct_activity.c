@@ -19,7 +19,7 @@
 static POINT_t global_point ;
 
 // Add your declaration for the PRODUCT_t static global here.
-
+static PRODUCT_t global_product;
 
 // parameters -- p_point is a pointer to the dot on the screen
 //				move_amount is the delta shift for the x coordinate.
@@ -34,7 +34,7 @@ static void move_x( POINT_t *p_point, double move_amount )
 	
 	// Try another way to add move_amount to x
 	// hint: Use arrow operator
-	
+	p_point->x += move_amount;
 }
 
 int main( int arg_count, char **arg_array )
@@ -42,6 +42,7 @@ int main( int arg_count, char **arg_array )
 	POINT_t origin ;
 	
 	// Add your declaration of PRODUCT_t here for the stack based case.
+	PRODUCT_t product;
 
 	// Initialize members of Origin
 	origin.x = 10 ;
@@ -63,6 +64,11 @@ int main( int arg_count, char **arg_array )
 	// Do one printf for the address of each member of PRODUCT_t for both the static global and stack based struct.
 	// This means a total of 4 address printf statements for each of the instances of PRODUCT_t
 	// One for the struct itself and one for each of the three members.
+	printf( "Location of global static product in global memory 0x%lx \n", (unsigned long)&global_product );
+	printf( "Location of product on the stack 0x%lx \n", (unsigned long)&product ) ;
+	printf( "Location of product.sequence on the stack 0x%lx \n", (unsigned long)&product.sequence ) ;
+	printf( "Location of product.product_id on the stack 0x%lx \n", (unsigned long)&product.product_id ) ;
+	printf( "Location of product.price on the stack 0x%lx \n", (unsigned long)&product.price ) ;
 
 	return 0 ; // return success
 }

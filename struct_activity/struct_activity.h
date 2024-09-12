@@ -17,5 +17,8 @@ typedef struct {
 //
 // Give it this name PRODUCT_t
 
-
-
+typedef struct {
+	unsigned char sequence;
+	int product_id;
+	float price;
+} PRODUCT_t;

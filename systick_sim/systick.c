@@ -37,10 +37,11 @@ int set_reload_register_test( uint32_t reload_value )
 
 		// STUDENT: first get the pointer to the systick registers using the get systick registers function.
 		//			now set the reload register to the passed reload_value
-
+		systick_registers_t *p_registers = get_systick_registers();
+		p_registers->RVR = reload_value;
 
 		// STUDENT now confirm that the RVR value is correct using the get_RVR()
-
+		result = (reload_value == get_RVR());
 
 	return result ;
 }

@@ -45,7 +45,7 @@ int set_reload_register_test( uint32_t reload_value )
 
 	return result ;
 }
-  
+
 // Test 3
 // STUDENT: Implement this as described. This depends Test 2 which depends on Test 1
 int enable_timer_test( uint32_t reload_value )
@@ -54,7 +54,8 @@ int enable_timer_test( uint32_t reload_value )
 
 	// STUDENT: call Test 2 with the passed reload_value
 	//			if it passes do the rest of the code
-
+	if (!set_reload_register_test(reload_value))
+		return result;
 
 		// STUDENT: first get the pointer to the systick registers using the get systick registers function.
 		//			now set the enable bit in the CSR
@@ -64,8 +65,14 @@ int enable_timer_test( uint32_t reload_value )
 		//			Read the SysTick manual -- what is supposed to happen to the CVR and RVR registers when
 		//			the enable bit is set? Use the registers pointer with the CVR and RVR member registers to
 		//			verify that the values are correct (do not use the get_RVR function).
-
-
+	systick_registers_t *p_registers = get_systick_registers();
+	p_registers->CSR |= 1; // 0th but is ENABLE; 1 = enabled and 0 = disabled
+	run_simulation(0);
+	// When ENABLE is set to 1, the counter loads the RELOAD value from the SYST_RVR register
+	// and then counts down.
+	// The SYST_CVR register contains the current value of the SysTick counter.
+	if (p_registers->CVR == reload_value && p_registers->RVR == reload_value)
+		result = 1;
 
 	return result ;
 }

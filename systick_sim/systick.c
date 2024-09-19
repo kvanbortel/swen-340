@@ -37,11 +37,11 @@ int set_reload_register_test( uint32_t reload_value )
 
 		// STUDENT: first get the pointer to the systick registers using the get systick registers function.
 		//			now set the reload register to the passed reload_value
-		systick_registers_t *p_registers = get_systick_registers();
-		p_registers->RVR = reload_value;
+	systick_registers_t *p_registers = get_systick_registers();
+	p_registers->RVR = reload_value;
 
 		// STUDENT now confirm that the RVR value is correct using the get_RVR()
-		result = (reload_value == get_RVR());
+	result = (reload_value == get_RVR());
 
 	return result ;
 }
@@ -86,18 +86,31 @@ int run_simulation_test( void )
 	reset_systick() ;		// start fresh
 
 	// STUDENT: call enable_timer_test with 3 cycle count. If it returns success then continue
-
+	if (!enable_timer_test(3))
+		return result;
 
 		// STUDENT: first get the pointer to the systick registers using the get systick registers function.
 		// 		    now run the simulation for 2 cycles. What should be the values of the RVR and CVR registers?
 		//			Write tests to check those two values are correct. Verify that the COUNTFLAG bit in the CSR
 		//			is still a 0.
+	systick_registers_t *p_registers = get_systick_registers();
+	run_simulation(2);
+	// RVR doesn't change
+	// CVR should be 1. It was 3 and 2 cycles ran.
+	// COUNTFLAG is 16th bit; Returns 1 if timer counted to 0 since last time this was read. Should be 0.
+	if (p_registers->RVR != 3 || p_registers->CVR != 1 || (p_registers->CSR & (1 << 16)))
+		return result;
 
 
 			// STUDENT: now run the simulation for one more clock cycle. Verify that the COUNTFLAG bit is now
 			//			set. What are the expected changes in the RVR and CVR registers? Test that the
 			//			values of the RVR and CVR registers are expected.
-
+	run_simulation(1);
+	// RVR stays the same
+	// CVR was 1 and 1 cycle ran so now it is back to 3
+	// CSR should be 1
+	if (p_registers->RVR == 3 && p_registers->CVR == 3 && (p_registers->CSR & (1 << 16)))
+		result = 1;
 
 	return result ;
 }

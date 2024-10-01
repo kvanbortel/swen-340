@@ -65,6 +65,10 @@ int main( int arg_count, char **arg_array )
 	// This means a total of 4 address printf statements for each of the instances of PRODUCT_t
 	// One for the struct itself and one for each of the three members.
 	printf( "Location of global static product in global memory 0x%lx \n", (unsigned long)&global_product );
+	printf( "Location of global_product.sequence on the stack 0x%lx \n", (unsigned long)&global_product.sequence ) ;
+	printf( "Location of global_product.product_id on the stack 0x%lx \n", (unsigned long)&global_product.product_id ) ;
+	printf( "Location of global_product.price on the stack 0x%lx \n", (unsigned long)&global_product.price ) ;
+	
 	printf( "Location of product on the stack 0x%lx \n", (unsigned long)&product ) ;
 	printf( "Location of product.sequence on the stack 0x%lx \n", (unsigned long)&product.sequence ) ;
 	printf( "Location of product.product_id on the stack 0x%lx \n", (unsigned long)&product.product_id ) ;

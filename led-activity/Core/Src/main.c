@@ -1,12 +1,11 @@
-// main.c with demo
-// Updated and refactored Larry Kiser copyright 2021
+// main.c with led_activity
 
 
 // include project specific header files
 #include "SysClock.h"
 #include "LED.h"
 #include "UART.h"
-#include "demo.h"
+#include "led_activity.h"
 
 	
 int main(void){
@@ -17,6 +16,6 @@ int main(void){
 	UART2_Init();
 	
 	// application run function
-	run_demo() ;
+	run_led_activity() ;
 }
 

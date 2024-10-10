@@ -13,6 +13,8 @@
 #include "stm32l4xx_it.h"
 #include "LED.h"
 
+#define MAX_COMMAND_LENGTH (7)
+
 static void init_systick()
 {
 	// Use the SysTick global structure pointer to do the following in this
@@ -41,20 +43,31 @@ static void delay_systick()
 }
 
 void prompt_menu(void) {
-	printf("***REMOTE LED CONTROL MENU***\n");
-	printf("Available User Commands\n");
-	printf("RON - Turn on RED LED");
-	printf("ROFF - Turn off RED LED");
-	printf("GON - Turn on GREEN LED");
-	printf("GOFF - Turn off GREEN LED");
-	printf("RFLASH - STart flashing RED LED");
-	printf("GFLASH - Start flashing GREEN LED");
-	printf("ALLOFF - TURNOFF LEDs");
+	const char *menu_str =
+		"\r\n***REMOTE LED CONTROL MENU***\r\n"
+		"Available User Commands\r\n"
+		"RON - Turn on RED LED\r\n"
+		"ROFF - Turn off RED LED\r\n"
+		"GON - Turn on GREEN LED\r\n"
+		"GOFF - Turn off GREEN LED\r\n"
+		"RFLASH - STart flashing RED LED\r\n"
+		"GFLASH - Start flashing GREEN LED\r\n"
+		"ALLOFF - TURNOFF LEDs\r\n";
+
+    USART_Write( USART2, (uint8_t *)menu_str, strlen(menu_str));
+}
+
+void prompt_input(void) {
+	char str[] = ">> ";
+    USART_Write( USART2, (uint8_t*)str, 2);
 }
 
 void handle_command(char *command) {
 	command = strupr(command);
-	if (strcmp(command, "RON") == 0) {
+	if (strcmp(command, "HELP") == 0) {
+		prompt_menu();
+	}
+	else if (strcmp(command, "RON") == 0) {
 		LED_On(NUCLEO_RED_LED_PIN);
 	}
 	else if (strcmp(command, "ROFF") == 0) {
@@ -89,10 +102,11 @@ void run_led_activity()
 
 	init_systick() ;
 	LED_Init();
-	char *command = "\n";
-	int command_done = 0;
+	char command[MAX_COMMAND_LENGTH] = {0};
+	int cmd_index = 0;
 
 	prompt_menu();
+	prompt_input();
 
 	while (1)
 	{
@@ -104,20 +118,17 @@ void run_led_activity()
 			if (one_char == '\r' || one_char == '\n') {
 				uint8_t newline[] = "\r\n";
 				USART_Write( USART2, newline, 2 ) ;
-				command += '\n';
-				command_done = 1;
+                command[cmd_index] = '\0'; // Null-terminate the command string
+                handle_command(command);
+                cmd_index = 0; // Reset command index for next input
+                memset(command, 0, MAX_COMMAND_LENGTH*sizeof(char)); // Clear the command buffer
+            	prompt_input();
 			}
-			else {
-				USART_Write( USART2, &one_char, 1 ) ;
-				command += one_char;
+			else if (cmd_index < MAX_COMMAND_LENGTH - 1) {
+                command[cmd_index++] = one_char; // Store the character in the command buffer
+                USART_Write(USART2, &one_char, 1);
 			}
 		}
-
-
-		if (command_done) {
-			handle_command(command);
-		}
-		command_done = 0;
 
 		delay_count++;
 

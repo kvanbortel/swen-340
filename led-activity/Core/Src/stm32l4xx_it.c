@@ -58,7 +58,7 @@
 /* External variables --------------------------------------------------------*/
 
 /* USER CODE BEGIN EV */
-int global_sec_elapsed = 0;
+//int global_sec_elapsed = 0;
 
 /* USER CODE END EV */
 
@@ -182,19 +182,19 @@ void PendSV_Handler(void)
 /**
   * @brief This function handles System tick timer.
   */
-void SysTick_Handler(void)
-{
-  /* USER CODE BEGIN SysTick_IRQn 0 */
-
-  /* USER CODE END SysTick_IRQn 0 */
-  HAL_IncTick();
-  /* USER CODE BEGIN SysTick_IRQn 1 */
-  if (HAL_GetTick() >= 1000) {
-	  global_sec_elapsed = 1;
-  }
-
-  /* USER CODE END SysTick_IRQn 1 */
-}
+//void SysTick_Handler(void)
+//{
+//  /* USER CODE BEGIN SysTick_IRQn 0 */
+//
+//  /* USER CODE END SysTick_IRQn 0 */
+//  HAL_IncTick();
+//  /* USER CODE BEGIN SysTick_IRQn 1 */
+//  if (HAL_GetTick() >= 1000) {
+//	  global_sec_elapsed = 1;
+//  }
+//
+//  /* USER CODE END SysTick_IRQn 1 */
+//}
 
 /******************************************************************************/
 /* STM32L4xx Peripheral Interrupt Handlers                                    */

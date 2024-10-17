@@ -3,8 +3,8 @@
 
 #include "stm32l476xx.h"
 
-extern int NUCLEO_GREEN_LED_PIN;
-extern int NUCLEO_RED_LED_PIN;
+extern int RED_LED;
+extern int GREEN_LED;
 
 void LED_Init(void);
 

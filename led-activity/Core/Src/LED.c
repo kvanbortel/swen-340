@@ -1,11 +1,8 @@
 #include "LED.h"
 
 
-//******************************************************************************************
-// Green LED on Nucleo board is LD2 Green. This is hard wired to GPIO pin PA5.
-//******************************************************************************************
-int NUCLEO_GREEN_LED_PIN = 5;	// GPIO PA5
-int NUCLEO_RED_LED_PIN = 6;
+int GREEN_LED = 6;
+int RED_LED = 7;
 
 // project specific manually connected LEDs on breadboard shield.
 #define ARDUINO_D12 (6)				// GPIO PA6 -- hard wired to Arduino D12
@@ -44,9 +41,8 @@ void GPIO_Output_Init( GPIO_TypeDef *GPIO, uint32_t pin )
 	GPIO->PUPDR   &= ~( (uint32_t)3 << ( 2 * pin ) ) ;  // No pull-up, no pull-down
 }
 
-// set up PA5, PA6, and PA7 to drive LEDs
+// set up PA6 and PA7 to drive LEDs
 void LED_Init(void){
-	GPIO_Output_Init( GPIOA, NUCLEO_GREEN_LED_PIN ) ;	// hard wired PA5 to on-board LD2 LED
 	GPIO_Output_Init( GPIOA, ARDUINO_D12 ) ;		// init PA6 as output (D12)
 	GPIO_Output_Init( GPIOA, ARDUINO_D11 ) ;		// init PA7 as output (D11)
 }
@@ -55,25 +51,28 @@ void LED_Init(void){
 // Turn LED On
 //******************************************************************************************
 void LED_On(int LED_PIN) {
-	GPIOA->ODR |= (uint32_t)1 << LED_PIN ; // PA5 for green
-	GPIOA->ODR |= (uint32_t)1 << ARDUINO_D12 ;	// PA6
-	GPIOA->ODR |= (uint32_t)1 << ARDUINO_D11 ;	// PA7
+	if (LED_PIN == GREEN_LED)
+		GPIOA->ODR |= (uint32_t)1 << ARDUINO_D12 ;	// PA6
+	else if (LED_PIN == RED_LED)
+		GPIOA->ODR |= (uint32_t)1 << ARDUINO_D11 ;	// PA7
 }
 
 //******************************************************************************************
 // Turn LED Off
 //******************************************************************************************
 void LED_Off(int LED_PIN){
-	GPIOA->ODR &= ~( (uint32_t)1 << LED_PIN );
-	GPIOA->ODR &= ~( (uint32_t)1 << ARDUINO_D12 ) ;	// PA6
-	GPIOA->ODR &= ~( (uint32_t)1 << ARDUINO_D11 ) ;	// PA7
+	if (LED_PIN == GREEN_LED)
+		GPIOA->ODR &= ~( (uint32_t)1 << ARDUINO_D12 ) ;	// PA6
+	else if (LED_PIN == RED_LED)
+		GPIOA->ODR &= ~( (uint32_t)1 << ARDUINO_D11 ) ;	// PA7
 }
 
 //******************************************************************************************
 // Toggle LED 
 //******************************************************************************************
 void LED_Toggle(int LED_PIN){
-	GPIOA->ODR ^= (uint32_t)1 << LED_PIN ;
-	GPIOA->ODR ^= (uint32_t)1 << ARDUINO_D12 ;	// PA6
-	GPIOA->ODR ^= (uint32_t)1 << ARDUINO_D11 ;	// PA7
+	if (LED_PIN == GREEN_LED)
+		GPIOA->ODR ^= (uint32_t)1 << ARDUINO_D12 ;	// PA6
+	else if (LED_PIN == RED_LED)
+		GPIOA->ODR ^= (uint32_t)1 << ARDUINO_D11 ;	// PA7
 }

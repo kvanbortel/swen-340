@@ -12,5 +12,6 @@
 *.exe
 
 build/
+Debug/
 
 desktop.ini

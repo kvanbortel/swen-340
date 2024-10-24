@@ -4,6 +4,7 @@
 // Larry Kiser, March 8, 2023
 
 
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -15,6 +16,7 @@
 static volatile uint8_t one_second_elapsed = 0;
 static uint32_t counter = 0;
 
+#define print_array(str) USART_Write(USART2, (uint8_t *)(str), sizeof(str) - 1)
 
 // The following enums go into a state machine specific header file if used in more than one .c file
 enum LED_states
@@ -25,11 +27,8 @@ enum LED_states
 	state_unknown
 } ;
 
-static enum LED_states red_led_state = state_unknown ;
-static enum LED_states green_led_state = state_unknown ;
-
 // NOTE -- these enum values must match the
-//         command_strings indicies.
+//         command_strings indices.
 enum command_events
 {
 	help = 0,	// enums start at 0 unless modified.
@@ -55,7 +54,7 @@ char *command_strings[] =
 	"RFLASH",
 	"GFLASH",
 	"ALLOFF",
-	// terminate this array with a NULL pointer to make it easy to used this array.
+	// terminate this array with a NULL pointer to make it easy to use this array.
 	NULL
 } ;
 
@@ -63,13 +62,8 @@ char *command_strings[] =
 // or no_event if there is no match.
 enum command_events check_name( char *possible_command )
 {
-	static char buffer[100];
 	for ( enum command_events index = help ; command_strings[ index ] ; index++ ) {
-		snprintf(buffer, sizeof(buffer), "Comparing %s to %s\r\n", possible_command, command_strings[index]);
-		USART_Write( USART2, (uint8_t *)buffer, strlen(buffer));
 		if ( strcmp( possible_command, command_strings[ index ] ) == 0 ) {
-			char *str = "Got it.\r\n";
-			USART_Write( USART2, (uint8_t *)str, strlen(str));
 			return index ;
 		}
 	}
@@ -104,7 +98,7 @@ void SysTick_Handler(void)
 }
 
 void prompt_menu(void) {
-	const char *menu_str =
+	const char menu_str[] =
 		"\r\n***REMOTE LED CONTROL MENU***\r\n"
 		"Available User Commands\r\n"
 		"RON - Turn on RED LED\r\n"
@@ -114,17 +108,17 @@ void prompt_menu(void) {
 		"RFLASH - Start flashing RED LED\r\n"
 		"GFLASH - Start flashing GREEN LED\r\n"
 		"ALLOFF - TURNOFF LEDs\r\n";
-
-    USART_Write( USART2, (uint8_t *)menu_str, strlen(menu_str));
+    print_array(menu_str);
 }
 
 void prompt_input(void) {
 	char str[] = ">> ";
-    USART_Write( USART2, (uint8_t*)str, 2);
+    print_array(str);
 }
 
 enum command_events check_for_event()
 {
+	char error_msg[] = "Invalid command\r\n";
 	enum { MAX_LENGTH = 20 };
 
 	static char current_command[ MAX_LENGTH + 1 ] ;
@@ -138,11 +132,15 @@ enum command_events check_for_event()
 	if (one_char != 0) {
 		// Enter key is pressed
 		if (one_char == '\r' || one_char == '\n') {
-			uint8_t newline[] = "\r\n";
-			USART_Write( USART2, newline, 2 ) ;
+			char newline[] = "\r\n";
+			print_array(newline);
             current_command[cmd_index] = '\0'; // Null-terminate the command string
             cmd_index = 0; // Reset command index for next input
         	event = check_name( current_command ) ;
+        	if (event == no_event) { // Handle an invalid input
+        	    print_array(error_msg);
+        	    prompt_input();
+        	}
             memset(current_command, 0, MAX_LENGTH*sizeof(char)); // Clear the command buffer
 		}
 		// Backspace is pressed
@@ -152,8 +150,8 @@ enum command_events check_for_event()
 	            current_command[cmd_index] = '\0';
 
 	            // Visually backspace
-	            uint8_t backspace[] = "\b \b";
-	            USART_Write(USART2, backspace, 3);
+	            char backspace[] = "\b \b";
+	            print_array(backspace);
 	        }
 	    }
 		else if (cmd_index < MAX_LENGTH - 1) {
@@ -164,95 +162,60 @@ enum command_events check_for_event()
 	return event;
 }
 
-// The following is the pattern to use for your state machine C file.
-
-void red_led_state_machine( enum command_events new_event )
+void red_led_state_machine (enum command_events new_event, bool global_clock)
 {
-	switch ( red_led_state )
-	{
-		case state_off :
-			if ( new_event == ron )
-			{
-				LED_On(RED_LED);
-				red_led_state = state_on ;
-			}
-			if (new_event == rflash)
-			{
-				red_led_state = state_flashing;
-			}
-			break ;
-		case state_on :
-			if ( new_event == roff || new_event == alloff)
-			{
-				LED_Off(RED_LED);
-				red_led_state = state_off ;
-			}
-			if (new_event == rflash)
-			{
-				red_led_state = state_flashing;
-			}
-			break ;
-		case state_flashing :
-			if ( new_event == ron )
-			{
-				LED_On(RED_LED);
-				red_led_state = state_on ;
-			}
-			if ( new_event == roff || new_event == alloff)
-			{
-				LED_Off(RED_LED);
-				red_led_state = state_off ;
-			}
-			break ;
-		case state_unknown :
+    static bool flashing = false;
+    switch (new_event)
+    {
+        case ron:
+            flashing = false;
+            LED_On(RED_LED);
+            break;
+        case roff:
+        case alloff:
+            flashing = false;
+            LED_Off(RED_LED);
+            break;
+        case rflash:
+            flashing = true;
+        default:
+        	;
+    }
+
+    if (flashing) {
+    	if (global_clock)
+    		LED_On(RED_LED);
+		else
 			LED_Off(RED_LED);
-			red_led_state = state_off ;
-			break ;
-	}
+    }
 }
 
-void green_led_state_machine (enum command_events new_event)
+void green_led_state_machine (enum command_events new_event, bool global_clock)
 {
-	switch (green_led_state)
-	{
-		case state_off:
-			if (new_event == gon)
-			{
-				LED_On(GREEN_LED);
-				green_led_state = state_on;
-			}
-			if (new_event == gflash)
-			{
-				green_led_state = state_flashing;
-			}
-		case state_on :
-			if ( new_event == goff || new_event == alloff)
-			{
-				LED_Off(GREEN_LED);
-				green_led_state = state_off ;
-			}
-			if (new_event == gflash)
-			{
-				green_led_state = state_flashing;
-			}
-			break ;
-		case state_flashing :
-			if ( new_event == gon )
-			{
-				LED_On(GREEN_LED);
-				green_led_state = state_on ;
-			}
-			if ( new_event == goff || new_event == alloff)
-			{
-				LED_Off(GREEN_LED);
-				green_led_state = state_off ;
-			}
-			break ;
-		case state_unknown:
+    static bool flashing = false;
+    switch (new_event)
+    {
+        case gon:
+            flashing = false;
+            LED_On(GREEN_LED);
+            break;
+        case goff:
+        case alloff:
+            flashing = false;
+            LED_Off(GREEN_LED);
+            break;
+        case gflash:
+            flashing = true;
+        default:
+        	;
+    }
+
+    if (flashing) {
+    	if (global_clock)
+    		LED_On(GREEN_LED);
+		else
 			LED_Off(GREEN_LED);
-			green_led_state = state_off;
-			break;
-	}
+    }
 }
 
 void run_led_activity()
@@ -262,16 +225,13 @@ void run_led_activity()
 	prompt_menu();
 	prompt_input();
 
+	bool global_clock = false;
+
 	while (1)
 	{
 		// Toggle flashing LEDs every second
 		if (one_second_elapsed) {
-			if (red_led_state == state_flashing) {
-				LED_Toggle(RED_LED);
-			}
-			if (green_led_state == state_flashing) {
-				LED_Toggle(GREEN_LED);
-			}
+			global_clock = !global_clock;
 			one_second_elapsed = 0;
 		}
 
@@ -280,8 +240,8 @@ void run_led_activity()
 		{
 			prompt_menu();
 		}
-		red_led_state_machine( new_event) ;
-		green_led_state_machine(new_event);
+		red_led_state_machine( new_event, global_clock) ;
+		green_led_state_machine(new_event, global_clock);
 		if (new_event != no_event)
 		{
         	prompt_input();
